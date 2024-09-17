@@ -5,7 +5,7 @@ const module = (function() {
     
         while (total_uploaded_size < size) {
             const part_size = (size - total_uploaded_size) < default_part_size ? (size - total_uploaded_size) : default_part_size;
-            const [ response, uploaded_size ] = await _upload_file_part(path, part_number, part_size, callbacks, (uploaded_size) => {
+            const [ response, uploaded_size ] = await _upload_file_part(path, part_number, total_uploaded_size, part_size, callbacks, (uploaded_size) => {
                 const percent = (total_uploaded_size + uploaded_size) / size * 100;
 
                 if (event_handlers["transfer"]) {
@@ -24,15 +24,15 @@ const module = (function() {
         return _complete_transfer(callbacks);
     }
 
-    function _upload_file_part(path, part_number, part_size, callbacks, on_transfer) {
+    function _upload_file_part(path, part_number, offset, length, callbacks, on_transfer) {
         var uploaded_size = 0;
     
         return _get_upload_url(callbacks, part_number)
             .then(({ url, params }) => {
                 return upload(url, "", path, Object.assign(params, {
                     "position": {
-                        "offset": part_size * (part_number - 1),
-                        "length": part_size
+                        "offset": offset,
+                        "length": length
                     } 
                 }), (bytes_written, total_bytes_written) => {
                     on_transfer(uploaded_size = total_bytes_written);
@@ -52,7 +52,6 @@ const module = (function() {
     }
 
     function _complete_transfer(callbacks) {
-        console.log("_complete_transfer")
         if (callbacks["complete"]) {
             return callbacks["complete"]();
         }
