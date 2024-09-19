@@ -2,7 +2,7 @@ const module = (function() {
     async function _upload_file(path, size, config, callbacks, event_handlers) {
         const default_part_size = config["part_size"] || 8 * 1024 * 1024; // default is 8MB
         var total_uploaded_size = 0, part_number = 1;
-    
+
         while (total_uploaded_size < size) {
             const part_size = (size - total_uploaded_size) < default_part_size ? (size - total_uploaded_size) : default_part_size;
             const [ response, uploaded_size ] = await _upload_file_part(path, part_number, total_uploaded_size, part_size, callbacks, (uploaded_size) => {
@@ -16,7 +16,7 @@ const module = (function() {
             if (event_handlers["upload_part"]) {
                 event_handlers["upload_part"](part_number, response);
             }
-            
+
             total_uploaded_size = total_uploaded_size + uploaded_size;
             part_number = part_number + 1;
         }
@@ -26,7 +26,7 @@ const module = (function() {
 
     function _upload_file_part(path, part_number, offset, length, callbacks, on_transfer) {
         var uploaded_size = 0;
-    
+
         return _get_upload_url(callbacks, part_number)
             .then(({ url, params }) => {
                 return upload(url, "", path, Object.assign(params, {
@@ -55,10 +55,10 @@ const module = (function() {
         if (callbacks["complete"]) {
             return callbacks["complete"]();
         }
-        
+
         return Promise.resolve()
     }
-    
+
     return {
         create: function(config = {}) {
             const _callbacks = {}, _event_handlers = {};
